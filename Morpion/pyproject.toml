@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "Morpion"
+version = "0.5.1"
+description = "A nice Morpion game"
+authors = ["PetchouHelper <petchou91d@gmail.com>"]
+packages = [
+    { include = "Morpion" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+termcolor = "^1.1.0"
+art = "^5.2"
+requests = "^2.26.0"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
