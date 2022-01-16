@@ -285,7 +285,7 @@ def isFirst():
         except FileExistsError:
             pass
         save = open(pathToSave()+'/save.json', "w")
-        debugDatas = {"#509 troubleshooting": "debug"}
+        debugDatas = {}
         json.dump(debugDatas, save)
         save.close()
 
