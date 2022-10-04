@@ -1,8 +1,8 @@
 # ___                                 _
-#|_ _| _ __ ___   _ __    ___   _ __ | |_  ___
+# |_ _| _ __ ___   _ __    ___   _ __ | |_  ___
 # | | | '_ ` _ \ | '_ \  / _ \ | '__|| __|/ __|
 # | | | | | | | || |_) || (_) || |   | |_ \__ \
-#|___||_| |_| |_|| .__/  \___/ |_|    \__||___/
+# |___||_| |_| |_|| .__/  \___/ |_|    \__||___/
 #                |_|
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QCoreApplication, QThread, pyqtSignal
@@ -20,35 +20,51 @@ import uuid
 import logging
 import shutil
 
-
 # ____         _
-#/ ___|   ___ | |_    _   _  _ __
-#\___ \  / _ \| __|  | | | || '_ \
+# / ___|   ___ | |_    _   _  _ __
+# \___ \  / _ \| __|  | | | || '_ \
 # ___) ||  __/| |_   | |_| || |_) |
-#|____/  \___| \__|   \__,_|| .__/
+# |____/  \___| \__|   \__,_|| .__/
 #                           |_|
 
 
-#get the path to the script's file
+# get the path to the script's file
+
+
 user = str(getpass.getuser())
 user = user[:5]
-path = (fr"C:\Users\{user}\AppData\Local\Programs\PetchouDev-Morpion")
 
-#Get the path to the UI files (GUI ressources and  images)
-def pathToUi()->str:
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app
+    # path into variable _MEIPASS'.
+    path = sys._MEIPASS
+else:
+    path = os.path.dirname(os.path.abspath(__file__))
+
+os.chdir(path)
+
+from ui.Load import LoadingGame
+from ui.Players import PlayerSelector
+from ui.EndScreen import EndScreenView
+from ui.Game import GameScreen
+from ui.Settings import SettingsView
+from ui.mode import ModeSelectorView
+
+# Get the path to the UI files (GUI ressources and  images)
+def pathToUi() -> str:
     global path
     if platform.system() == 'Windows':
-        thePath = path+"/"  
+        thePath = path + "/ui/"
         print(path, thePath)
         return thePath
     else:
-        return path+"/ui/" 
+        return path + "/ui/"
+
+    # get the path to the save file
 
 
-
-
-#get the path to the save file
-def pathToSave()->str:
+def pathToSave() -> str:
     if platform.system() == 'Windows':
         usr = str(getpass.getuser())
         usr = usr[:5]
@@ -57,52 +73,48 @@ def pathToSave()->str:
     else:
         return f"/Users/{getpass.getuser()}/PetchouDev/Morpion"
 
+
 global save
 save = {}
 
-
-#gérer la langue
+# gérer la langue
 global lang
-lang = {"fr":None, "en":None}
-#créer les variables joueurs
-global p1 
-p1= ""
-global p2 
+lang = {"fr": None, "en": None}
+# créer les variables joueurs
+global p1
+p1 = ""
+global p2
 p2 = ""
 global currentPlayer
 currentPlayer = None
 
-
-#créer la grille
-grid = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None}
+# créer la grille
+grid = {1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
 global turn
 turn = 1
 global winner
 winner = None
 
 
-
-
-
-
 #    _                   _  _               _    _
 #   / \    _ __   _ __  | |(_)  ___   __ _ | |_ (_)  ___   _ __
 #  / _ \  | '_ \ | '_ \ | || | / __| / _` || __|| | / _ \ | '_ \
 # / ___ \ | |_) || |_) || || || (__ | (_| || |_ | || (_) || | | |
-#/_/   \_\| .__/ | .__/ |_||_| \___| \__,_| \__||_| \___/ |_| |_|
+# /_/   \_\| .__/ | .__/ |_||_| \___| \__,_| \__||_| \___/ |_| |_|
 #         |_|    |_|
 
 
-#Barre de chargement et tâches de démarrage
+# Barre de chargement et tâches de démarrage
 
 class Task(QThread):
-    #créer les variables d'interraction avec le GUI
+    # créer les variables d'interraction avec le GUI
     changeValue = pyqtSignal(int)
     nextScreen = pyqtSignal(str)
     isFirst = pyqtSignal()
     loader = pyqtSignal()
     is_paused = False
-    #barre de chargement
+
+    # barre de chargement
     def run(self):
 
         for i in range(1, 101):
@@ -111,8 +123,8 @@ class Task(QThread):
                 self.isFirst.emit()
             elif i == 80:
                 self.loader.emit()
-            
-            elif  i == 101:
+
+            elif i == 101:
                 print("Load reached 100% triggering next step")
             time.sleep(0.04)
             while self.is_paused:
@@ -122,73 +134,98 @@ class Task(QThread):
 
     def pause(self):
         self.is_paused = True
+
     def resume(self):
         self.is_paused = False
 
 
+class ModeSelector(QtWidgets.QMainWindow):
 
-#fenêtre de chargement
+    def __init__(self):
+        super(ModeSelector, self).__init__()
+
+        self.ui = ModeSelectorView()
+        self.ui.setupUi(self)
+
+        self.ui.local.clicked.connect(self.localGame)
+        self.ui.create.clicked.connect(self.createGame)
+        self.ui.join.clicked.connect(self.joinGame)
+        self.show()
+
+    def localGame(self):
+        self.win = SetPlayers()
+        self.win.show()
+        self.close()
+
+    def createGame(self):
+        self.close()
+        sys.exit()
+
+    def joinGame(self):
+        self.close()
+        sys.exit()
+
+
+# fenêtre de chargement
 class Startup(QtWidgets.QMainWindow):
     window_closed = pyqtSignal()
+
     def __init__(self):
-        
-        super(Startup, self).__init__() # Call the inherited classes __init__ method
+
+        super(Startup, self).__init__()  # Call the inherited classes __init__ method
         path = pathToUi()
-        uic.loadUi(path+"/Load.ui", self) # Load the .ui file
+        # uic.loadUi(path + "/Load.ui", self)  # Load the .ui file
+        self.ui = LoadingGame()
+        self.ui.setupUi(self)
         print('UI file loaded')
 
-        #self.Form.setStyleSheet('background-color:white;')
+        # self.Form.setStyleSheet('background-color:white;')
         self.setFixedWidth(850)
         self.setFixedHeight(330)
 
         self.logo = QMovie(f"{pathToUi()}/Morpion.gif")
-        self.label_3.setMovie(self.logo)
+        self.ui.label_3.setMovie(self.logo)
         self.logo.start()
-        
-        self.progressBar.setValue(0)
-        
+
+        self.ui.progressBar.setValue(0)
+
         self.show()
 
         self.startProgressBar()
 
-
-
     def loadFiles(self):
-        #charger le fichier de sauvegarde
-        global save 
+        # charger le fichier de sauvegarde
+        global save
         save = {}
         with open(f'{pathToSave()}/save.json', 'r', encoding='utf-8') as saveFile:
             save = json.load(saveFile)
             print(save)
 
-        logging.basicConfig(filename=pathToSave()+"/logs.txt", level=logging.DEBUG)
+        logging.basicConfig(filename=pathToSave() + "/logs.txt", level=logging.DEBUG)
 
         logging.debug('initializing logs session')
-
 
     def getLang(self):
         self.thread.is_paused = True
         global lang
         items = ("English", "Français")
-		
-        item, ok = QtWidgets.QInputDialog.getItem(self, "select input dialog", 
-        "list of languages", items, 0, False)
-			
+
+        item, ok = QtWidgets.QInputDialog.getItem(self, "select input dialog",
+                                                  "list of languages", items, 0, False)
+
         if ok and item:
             lang = str(item)
-            with open(pathToSave()+"/language.txt", "w") as output:
-                output.write("fr" if lang == "Français"  else "en" )
+            with open(pathToSave() + "/language.txt", "w") as output:
+                output.write("fr" if lang == "Français" else "en")
         self.thread.is_paused = False
-
-
 
     def isFirst(self):
 
         global lang
         try:
-            with open(pathToSave()+"/language.txt", "r"):
+            with open(pathToSave() + "/language.txt", "r"):
                 pass
-            
+
         except FileNotFoundError:
             print('First use, initializing filesystem...')
             try:
@@ -196,28 +233,28 @@ class Startup(QtWidgets.QMainWindow):
             except FileExistsError:
                 pass
             try:
-                os.mkdir(pathToSave()+"/logs")
+                os.mkdir(pathToSave() + "/logs")
             except FileExistsError:
                 pass
-            save = open(pathToSave()+'/save.json', "w")
+            save = open(pathToSave() + '/save.json', "w")
             debugDatas = {}
             json.dump(debugDatas, save)
             save.close()
 
-            langage = open(pathToSave()+"/language.txt", "w")
+            langage = open(pathToSave() + "/language.txt", "w")
             langage.write('en')
             langage.close()
-            
-            logs = open(pathToSave()+"/logs/logs.txt", "w")
+
+            logs = open(pathToSave() + "/logs/logs.txt", "w")
             logs.write("Initialized logs file")
             logs.close()
 
             self.getLang()
 
     def startProgressBar(self):
-        
+
         self.thread = Task()
-        self.thread.changeValue.connect(self.progressBar.setValue)
+        self.thread.changeValue.connect(self.ui.progressBar.setValue)
         self.thread.nextScreen.connect(self.nextStep)
         self.thread.isFirst.connect(self.isFirst)
         self.thread.loader.connect(self.loadFiles)
@@ -226,18 +263,18 @@ class Startup(QtWidgets.QMainWindow):
     def nextStep(self, log):
         print('Loading next step')
         print(log)
-        self.win = SetPlayers()
-        
+        self.win = ModeSelector()
+
         self.win.show()
         self.close()
 
-    
     def closeWindow(self, event):
         print('Closed')
         self.window_closed.emit()
         event.accept()
 
-#tache de gestion de la liste de joueurs
+
+# tache de gestion de la liste de joueurs
 class PlayerUpdater(QThread):
     updater = pyqtSignal()
     L1Deleted = None
@@ -247,23 +284,24 @@ class PlayerUpdater(QThread):
         while True:
             self.updater.emit()
             time.sleep(0.3)
-        
 
 
-
-#Gérer les joueurs
+# Gérer les joueurs
 class SetPlayers(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super(SetPlayers, self).__init__()
-        uic.loadUi(f'{pathToUi()}/Players.ui', self)
+
+        # uic.loadUi(f'{pathToUi()}/Players.ui', self)
+        self.ui = PlayerSelector()
+        self.ui.setupUi(self)
 
         self.PlayersList()
         self.L1DEL = None
         self.L2DEL = None
 
-        self.pushButton.clicked.connect(self.NewPlayer)
-        self.pushButton_2.clicked.connect(self.NewPlayer)
-        self.pushButton_3.clicked.connect(self.nextStep)
+        self.ui.pushButton.clicked.connect(self.NewPlayer)
+        self.ui.pushButton_2.clicked.connect(self.NewPlayer)
+        self.ui.pushButton_3.clicked.connect(self.nextStep)
 
         self.thread = PlayerUpdater()
         self.thread.updater.connect(self.UpdatePlayers)
@@ -271,75 +309,72 @@ class SetPlayers(QtWidgets.QMainWindow):
 
         self.show()
 
-    #Lister les joueurs enregistrés
+    # Lister les joueurs enregistrés
     def PlayersList(self):
         global save
-        self.comboBox.addItem("Select Player")
-        self.comboBox_2.addItem("Select Player")
+        self.ui.comboBox.addItem("Select Player")
+        self.ui.comboBox_2.addItem("Select Player")
         for player in save.keys():
             if player != 'currentPlayers':
-                self.comboBox.addItem(player)
-                self.comboBox_2.addItem(player)
+                self.ui.comboBox.addItem(player)
+                self.ui.comboBox_2.addItem(player)
 
     def UpdatePlayers(self):
 
-        #Gérer les noms dans les listes
+        # Gérer les noms dans les listes
 
-        L1Items = [self.comboBox.itemText(i) for i in range(self.comboBox.count())]
-        
-        L2Items = [self.comboBox_2.itemText(i) for i in range(self.comboBox_2.count())]
+        L1Items = [self.ui.comboBox.itemText(i) for i in range(self.ui.comboBox.count())]
 
-        
-        #liste 2 en focntion de liste 1
-        if self.comboBox.currentText() in L2Items :
-            if self.comboBox.currentText() != "Select Player":
+        L2Items = [self.ui.comboBox_2.itemText(i) for i in range(self.ui.comboBox_2.count())]
+
+        # liste 2 en focntion de liste 1
+        if self.ui.comboBox.currentText() in L2Items:
+            if self.ui.comboBox.currentText() != "Select Player":
                 if self.L2DEL != None:
-                    self.comboBox_2.addItem(self.L2DEL)
-                    
-                self.L2DEL = self.comboBox.currentText()
-                self.comboBox_2.removeItem(self.comboBox_2.findText(self.comboBox.currentText()))
-            elif self.comboBox.currentText() == "Select Player" and self.L2DEL not in L2Items and self.L2DEL != None:
-                self.comboBox_2.addItem(self.L2DEL)
+                    self.ui.comboBox_2.addItem(self.L2DEL)
 
+                self.L2DEL = self.ui.comboBox.currentText()
+                self.ui.comboBox_2.removeItem(self.ui.comboBox_2.findText(self.ui.comboBox.currentText()))
+            elif self.ui.comboBox.currentText() == "Select Player" and self.L2DEL not in L2Items and self.L2DEL != None:
+                self.ui.comboBox_2.addItem(self.L2DEL)
 
-        #liste 1 en focntion de liste 2
-        if self.comboBox_2.currentText() in L1Items :
-            if self.comboBox_2.currentText() != "Select Player":
+        # liste 1 en fonction de liste 2
+        if self.ui.comboBox_2.currentText() in L1Items:
+            if self.ui.comboBox_2.currentText() != "Select Player":
                 if self.L1DEL != None:
-                    self.comboBox.addItem(self.L1DEL)
-                    
-                self.L1DEL = self.comboBox_2.currentText()
-                self.comboBox.removeItem(self.comboBox.findText(self.comboBox_2.currentText()))
-            elif self.comboBox_2.currentText() == "Select Player" and self.L1DEL not in L1Items and self.L1DEL != None:
-                self.comboBox.addItem(self.L1DEL)
+                    self.ui.comboBox.addItem(self.L1DEL)
 
+                self.L1DEL = self.ui.comboBox_2.currentText()
+                self.ui.comboBox.removeItem(self.ui.comboBox.findText(self.ui.comboBox_2.currentText()))
+            elif self.ui.comboBox_2.currentText() == "Select Player" and self.L1DEL not in L1Items and self.L1DEL != None:
+                self.ui.comboBox.addItem(self.L1DEL)
 
-        #gérer le  bouton play
-        if "Select Player" == (self.comboBox_2.currentText() or self.comboBox.currentText()):
-            self.pushButton_3.setEnabled(False)
+        # gérer le bouton play
+        if "Select Player" == (self.ui.comboBox_2.currentText() or self.ui.comboBox.currentText()):
+            self.ui.pushButton_3.setEnabled(False)
         else:
-            self.pushButton_3.setEnabled(True)
+            self.ui.pushButton_3.setEnabled(True)
 
     def NewPlayer(self):
         text, ok = QtWidgets.QInputDialog.getText(self, 'Create new player', "New player's name :")
-		
+
         if ok and text != "":
             global save
             if str(text) not in save.keys():
                 save[str(text)] = [0, 0, 0]
-                self.comboBox.addItem(str(text))
-                self.comboBox_2.addItem(str(text))
-            if self.comboBox.currentText() == "Select Player":
-                self.comboBox.setCurrentIndex(self.comboBox.findText(str(text)))
+                self.ui.comboBox.addItem(str(text))
+                self.ui.comboBox_2.addItem(str(text))
+            if self.ui.comboBox.currentText() == "Select Player":
+                self.ui.comboBox.setCurrentIndex(self.ui.comboBox.findText(str(text)))
             else:
-                if self.comboBox_2.currentText() == "Select Player":
-                    self.comboBox_2.setCurrentIndex(self.comboBox_2.findText(str(text)))
+                if self.ui.comboBox_2.currentText() == "Select Player":
+                    self.ui.comboBox_2.setCurrentIndex(self.ui.comboBox_2.findText(str(text)))
 
     def nextStep(self):
         global p1
         global p2
-        p1 = self.comboBox.currentText()
-        p2 = self.comboBox_2.currentText()
+        p1 = self.ui.comboBox.currentText()
+        p2 = self.ui.comboBox_2.currentText()
         print('Loading next step')
         self.win = Game()
         self.win.show()
@@ -351,48 +386,49 @@ class SetPlayers(QtWidgets.QMainWindow):
         event.accept()
 
 
-
-#Jouer au jeu
+# Jouer au jeu
 class Game(QtWidgets.QMainWindow):
     window_closed = pyqtSignal()
+
     def __init__(self):
-        
-        super(Game, self).__init__() # Call the inherited classes __init__ method
-        uic.loadUi(f'{pathToUi()}/Game.ui', self) # Load the .ui file
+
+        super(Game, self).__init__()  # Call the inherited classes __init__ method
+        # uic.loadUi(f'{pathToUi()}/Game.ui', self)  # Load the .ui file
+        self.ui = GameScreen()
+        self.ui.setupUi(self)
+
         print('UI file loaded')
 
-
-        #récupérer les joueurs et décider qui commence
+        # récupérer les joueurs et décider qui commence
         global p1icon
         p1icon = QPixmap(f'{pathToUi()}/cross.png')
         global p2icon
         p2icon = QPixmap(f'{pathToUi()}/circle.png')
-        
+
         global p1
         global p2
-        
+
         self.currentPlayer = random.choice([p1, p2])
 
-        #mettre  en place le GUI
+        # mettre en place le GUI
         global cases
-        self. cases = [self.L1, self.L2, self.L3, self.L4, self.L5, self.L6, self.L7, self.L8, self.L9]
+        self.cases = [self.ui.L1, self.ui.L2, self.ui.L3, self.ui.L4, self.ui.L5, self.ui.L6, self.ui.L7, self.ui.L8,
+                      self.ui.L9]
         for case in self.cases:
             case.setPixmap(QPixmap(f'{pathToUi()}/empty.png'))
             case.mousePressEvent = partial(self.play, case)
-        self.grid.setPixmap(QPixmap(f'{pathToUi()}/grid.png'))
+        self.ui.grid.setPixmap(QPixmap(f'{pathToUi()}/grid.png'))
 
-        self.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
-        
+        self.ui.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
 
         if self.currentPlayer == p1:
-            self.Icon.setPixmap(p1icon)
-        else: 
-            self.Icon.setPixmap(p2icon)
+            self.ui.Icon.setPixmap(p1icon)
+        else:
+            self.ui.Icon.setPixmap(p2icon)
 
-        self.TurnCounter.setText("Trun 1")
+        self.ui.TurnCounter.setText("Trun 1")
 
         self.show()
-
 
     def play(self, case, event):
 
@@ -402,50 +438,49 @@ class Game(QtWidgets.QMainWindow):
         global p1icon
         global p2icon
         global turn
-        global winner 
-        #récupérer les cases
+        global winner
+        # récupérer les cases
         case = str(case.objectName())
         case = int(case[-1])
 
         print(self.currentPlayer, p1, p2)
-        #si c'est p1 qui joue
+        # si c'est p1 qui joue
         if self.currentPlayer == p1 and grid[case] == None:
             print('P1 played')
             grid[case] = p1
-            self.cases[case -1].setPixmap(QPixmap(f'{pathToUi()}/cross.png'))
+            self.cases[case - 1].setPixmap(QPixmap(f'{pathToUi()}/cross.png'))
             self.currentPlayer = p2
-            self.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
-            self.Icon.setPixmap(p1icon if self.currentPlayer == p1 else p2icon)
-            text = str(self.TurnCounter.text())
-            self.TurnCounter.setText(f"Turn {int(text[-1])+1}")
-            turn = int(text[-1])+1
+            self.ui.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
+            self.ui.Icon.setPixmap(p1icon if self.currentPlayer == p1 else p2icon)
+            text = str(self.ui.TurnCounter.text())
+            self.ui.TurnCounter.setText(f"Turn {int(text[-1]) + 1}")
+            turn = int(text[-1]) + 1
 
-        #si c'est p2 qui joue
+        # si c'est p2 qui joue
         elif self.currentPlayer == p2 and grid[case] == None:
             print('P2 played')
             grid[case] = p2
-            self.cases[case -1].setPixmap( QPixmap(f'{pathToUi()}/circle.png'))
+            self.cases[case - 1].setPixmap(QPixmap(f'{pathToUi()}/circle.png'))
             self.currentPlayer = p1
-            self.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
-            self.Icon.setPixmap(p1icon if self.currentPlayer == p1 else p2icon)
-            text = str(self.TurnCounter.text())
-            self.TurnCounter.setText(f"Turn {int(text[-1])+1}")
-            turn = int(text[-1])+1
+            self.ui.PlayerTurn.setText(f"It's {self.currentPlayer}'s trun !")
+            self.ui.Icon.setPixmap(p1icon if self.currentPlayer == p1 else p2icon)
+            text = str(self.ui.TurnCounter.text())
+            self.ui.TurnCounter.setText(f"Turn {int(text[-1]) + 1}")
+            turn = int(text[-1]) + 1
 
-
-        #savoir si c'est terminé
+        # savoir si c'est terminé
         isEnded = self.isEnded()
-        if  isEnded != True and isEnded == 10 : #not car True et false sont inversés... --,
+        if isEnded != True and isEnded == 10:  # not car True et false sont inversés... --,
             winner = None
             self.nextStep("Game ended on draw")
-            
+
 
         elif isEnded != True and isEnded != 10:
             winner = isEnded
             self.nextStep(f"{isEnded} won the game")
 
+        # si le jeu est fini
 
-        #si le jeu est fini
     def isEnded(self):
         global grid
         global turn
@@ -470,64 +505,63 @@ class Game(QtWidgets.QMainWindow):
         else:
             return True
 
-
     def nextStep(self, log):
         print('Loading next step')
         print(log)
         self.win = EndScreen()
-        
+
         self.win.show()
         self.close()
 
-    
     def closeWindow(self, event):
         print('Closed')
         self.window_closed.emit()
         event.accept()
 
 
-
-#afficher les résultats
+# afficher les résultats
 class EndScreen(QtWidgets.QMainWindow):
     window_closed = pyqtSignal()
+
     def __init__(self):
-        
-        super(EndScreen, self).__init__() # Call the inherited classes __init__ method
-        uic.loadUi(f'{pathToUi()}/EndScreen.ui', self) # Load the .ui file
-        
+
+        super(EndScreen, self).__init__()  # Call the inherited classes __init__ method
+        # uic.loadUi(f'{pathToUi()}/EndScreen.ui', self)  # Load the .ui file
+        self.ui = EndScreenView()
+        self.ui.setupUi(self)
         global winner
         global p1
         global p2
         global save
         if winner == None:
-            self.Notif.setText("That's a draw...")
-            self.Comment.setText("Well done to the both of you")
+            self.ui.Notif.setText("That's a draw...")
+            self.ui.Comment.setText("Well done to the both of you")
             save[p1][2] += 1
             save[p2][2] += 1
 
-        
+
         else:
-            self.Notif.setText(f"Congratz {winner} !")
-            self.Comment.setText("You won the game")
+            self.ui.Notif.setText(f"Congratz {winner} !")
+            self.ui.Comment.setText("You won the game")
             if winner == p1:
                 save[p1][0] += 1
                 save[p2][1] += 1
             else:
                 save[p1][1] += 1
                 save[p2][0] += 1
-            
+
         with open(f'{pathToSave()}/save.json', 'w', encoding='utf-8') as saveFile:
             json.dump(save, saveFile)
 
         print(save)
-        
-        self.ps1.setText(f"{p1} : {save[p1][0]} wins, {save[p1][1]} defeats and {save[p1][2]} draw")
-        self.ps2.setText(f"{p2} : {save[p2][0]} wins, {save[p2][1]} defeats and {save[p2][2]} draw")
 
-        self.Replay.clicked.connect(self.ReplayNow)
-        self.Leave.clicked.connect(self.LeaveGame)
-        self.Change.clicked.connect(self.ChangePlayers)
-        self.Settings.clicked.connect(self.SettingsPannel)
+        self.ui.ps1.setText(f"{p1} : {save[p1][0]} wins, {save[p1][1]} defeats and {save[p1][2]} draw")
+        self.ui.ps2.setText(f"{p2} : {save[p2][0]} wins, {save[p2][1]} defeats and {save[p2][2]} draw")
+
+        self.ui.Replay.clicked.connect(self.ReplayNow)
+        self.ui.Leave.clicked.connect(self.LeaveGame)
+        self.ui.Change.clicked.connect(self.ChangePlayers)
+        self.ui.Settings.clicked.connect(self.SettingsPannel)
 
         self.show()
 
@@ -535,15 +569,14 @@ class EndScreen(QtWidgets.QMainWindow):
         self.settingsWindow = SettingsWindow(self)
         self.settingsWindow.show()
 
-
     def ReplayNow(self):
         global grid
-        grid = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None}
+        grid = {1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
         self.nextStep(Game())
 
     def ChangePlayers(self):
         global grid
-        grid = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None}
+        grid = {1: None, 2: None, 3: None, 4: None, 5: None, 6: None, 7: None, 8: None, 9: None}
         self.nextStep(SetPlayers())
 
     def LeaveGame(self):
@@ -555,55 +588,55 @@ class EndScreen(QtWidgets.QMainWindow):
         self.win.show()
         self.close()
 
-    
     def closeWindow(self, event):
         print('Closed')
         self.window_closed.emit()
         event.accept()
 
-#réglages 
+
+# réglages
 class SettingsWindow(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(SettingsWindow, self).__init__(parent)
-        uic.loadUi(f'{pathToUi()}/Settings.ui', self)
-        
-        self.btn.clicked.connect(self.getItem)
-        
-        
-        self.eraseDatas.clicked.connect(self.gettext)
-        
-        with open(pathToSave()+"/language.txt","r") as language:
+        # uic.loadUi(f'{pathToUi()}/Settings.ui', self)
+        self.ui = SettingsView()
+        self.ui.setupUi(self)
+        self.ui.btn.clicked.connect(self.getItem)
+
+        self.ui.eraseDatas.clicked.connect(self.gettext)
+
+        with open(pathToSave() + "/language.txt", "r") as language:
             self.currentLanguage = language.read()
 
-        self.le.setText(self.currentLanguage)
+        self.ui.le.setText(self.currentLanguage)
 
-        self.Save.clicked.connect(self.QuitAndApply)
-        self.Cancel.clicked.connect(self.QuitWithoutApply)
-
+        self.ui.Save.clicked.connect(self.QuitAndApply)
+        self.ui.Cancel.clicked.connect(self.QuitWithoutApply)
 
     def getItem(self):
-            items = ("English - en", "French - fr")
-            
-            item, ok = QtWidgets.QInputDialog.getItem(self, "Select your language", 
-            "list of languages", items, 0, False)
-                
-            if ok and item:
-                
-                self.le.setText(item)
+        items = ("English - en", "French - fr")
+
+        item, ok = QtWidgets.QInputDialog.getItem(self, "Select your language",
+                                                  "list of languages", items, 0, False)
+
+        if ok and item:
+            self.ui.le.setText(item)
 
     def gettext(self):
-            captcha = str(uuid.uuid4())
-            captcha = captcha[:6]
-            text, ok = QtWidgets.QInputDialog.getText(self, 'Erase datas', f"Recopy the following text to proceed \n{captcha}\nPlease note that the game will  restart after deleting datas")
-                
-            if ok and str(text) == captcha:
-                global save
-                save = {}
-                with open(pathToSave()+"/save.json", "w", encoding="utf-8") as newSave:
-                    json.dump(save, newSave)
-                time.sleep(2)
-                self.close()
-                QCoreApplication.instance().quit()
+        captcha = str(uuid.uuid4())
+        captcha = captcha[:6]
+        text, ok = QtWidgets.QInputDialog.getText(self, 'Erase datas',
+                                                  f"Recopy the following text to proceed :\n{captcha}\nPlease note "
+                                                  f"that the game will  restart after deleting datas")
+
+        if ok and str(text) == captcha:
+            global save
+            save = {}
+            with open(pathToSave() + "/save.json", "w", encoding="utf-8") as newSave:
+                json.dump(save, newSave)
+            time.sleep(2)
+            self.close()
+            QCoreApplication.instance().quit()
 
     def QuitWithoutApply(self):
         self.close()
@@ -613,9 +646,9 @@ class SettingsWindow(QtWidgets.QDialog):
         item = str(self.le.text())
         item = str(item)
         item = item[:-2]
-        if  item in lang.keys():
+        if item in lang.keys():
             newlang = item
-            with open(pathToSave()+"/language.txt" ,"w") as output:
+            with open(pathToSave() + "/language.txt", "w") as output:
                 output.write(newlang)
 
         else:
@@ -624,21 +657,21 @@ class SettingsWindow(QtWidgets.QDialog):
 
 
 # _____  ____   ____    ___   ____   ____
-#| ____||  _ \ |  _ \  / _ \ |  _ \ / ___|
-#|  _|  | |_) || |_) || | | || |_) |\___ \
-#| |___ |  _ < |  _ < | |_| ||  _ <  ___) |
-#|_____||_| \_\|_| \_\ \___/ |_| \_\|____/
+# | ____||  _ \ |  _ \  / _ \ |  _ \ / ___|
+# |  _|  | |_) || |_) || | | || |_) |\___ \
+# | |___ |  _ < |  _ < | |_| ||  _ <  ___) |
+# |_____||_| \_\|_| \_\ \___/ |_| \_\|____/
 
 class ReportError(QtWidgets.QMainWindow):
     def __init__(self):
-        super(ReportError, self).__init__() # Call the inherited classes __init__ method
+        super(ReportError, self).__init__()  # Call the inherited classes __init__ method
         uic.loadUi(f'{pathToUi()}/Error.ui', self)
 
         self.logView = 322
         self.setFixedHeight(130)
 
-        with open(pathToSave()+"/logs/logs.txt") as logs:
-            self.traceback = logs.read()  
+        with open(pathToSave() + "/logs/logs.txt") as logs:
+            self.traceback = logs.read()
         self.logText.setText(self.traceback)
         self.here.setText('<a href=\"https://github.com/P-C-Corp/Games/issues/new">here</a>')
         self.View.clicked.connect(partial(self.Show, self.View))
@@ -650,13 +683,10 @@ class ReportError(QtWidgets.QMainWindow):
         btn.setEnabled(False)
 
     def Reset(self):
-            
-            
-            shutil.rmtree(pathToSave(), ignore_errors=True)
+        shutil.rmtree(pathToSave(), ignore_errors=True)
 
-            
-            self.close()
-            QCoreApplication.instance().quit()
+        self.close()
+        QCoreApplication.instance().quit()
 
     def exitApp(self):
         self.close()
@@ -664,13 +694,13 @@ class ReportError(QtWidgets.QMainWindow):
 
 
 # ____
-#|  _ \   ___  _ __ ___    __ _  _ __  _ __   __ _   __ _   ___
-#| | | | / _ \| '_ ` _ \  / _` || '__|| '__| / _` | / _` | / _ \
-#| |_| ||  __/| | | | | || (_| || |   | |   | (_| || (_| ||  __/
-#|____/  \___||_| |_| |_| \__,_||_|   |_|    \__,_| \__, | \___|
+# |  _ \   ___  _ __ ___    __ _  _ __  _ __   __ _   __ _   ___
+# | | | | / _ \| '_ ` _ \  / _` || '__|| '__| / _` | / _` | / _ \
+# | |_| ||  __/| | | | | || (_| || |   | |   | (_| || (_| ||  __/
+# |____/  \___||_| |_| |_| \__,_||_|   |_|    \__,_| \__, | \___|
 #                                                   |___/
 try:
-    
+
     if __name__ == "__main__":
         try:
             pathToFolder = str(pathToSave())
@@ -687,16 +717,15 @@ try:
             pass
 
         try:
-            os.mkdir(pathToSave()+"/logs")
+            os.mkdir(pathToSave() + "/logs")
         except FileExistsError:
             pass
 
-        logfile = open(pathToSave()+"/logs/logs.txt", "w")
+        logfile = open(pathToSave() + "/logs/logs.txt", "w")
         logfile.write("Log file initialized\n")
         logfile.close()
 
-
-        logging.basicConfig(filename=pathToSave()+"/logs/logs.txt", level=logging.DEBUG)
+        logging.basicConfig(filename=pathToSave() + "/logs/logs.txt", level=logging.DEBUG)
 
         logging.debug('initializing logs session')
 
@@ -704,9 +733,9 @@ try:
         window = Startup()
         window.show()
         currentExitCode = application.exec_()
-        application = None 
-        
-except  :
+        application = None
+
+except:
 
     exc_type, exc_value, exc_traceback = sys.exc_info()
     traceback.print_exception(exc_type, exc_value, exc_traceback)
@@ -719,8 +748,4 @@ except  :
     window = ReportError()
     window.show()
     currentExitCode = application.exec_()
-    application = None 
-
-
-
-
+    application = None

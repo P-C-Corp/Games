@@ -11,12 +11,20 @@ Morpion/poetry.lock
 Morpion/README.rst
 Morpion/PetchouDev-Morpion-0.1.1-installer.exe4
 Morpion/Morpion/dist
+Morpion/DS_Store
 
 Morpion/GUI/dist
 Morpion/GUI/resources for installer
 Morpion/GUI/build
+Morpion/GUI/.idea
+Morpion/GUI/.env
+Morpion/GUI/DS_Store
+Morpion/GUI/__pycache__
+Morpion/GUI/ui/__pycache__/
+
+DS_Store
 
 
-.DS_Store
+DS_Store
 .idea
 
