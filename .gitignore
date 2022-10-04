@@ -1,0 +1,22 @@
+.qt_for_python
+
+Pendu/tests
+Pendu/dist
+Pendu/poetry.lock
+Pendu/README.rst
+
+Morpion/dist
+Morpion/tests
+Morpion/poetry.lock
+Morpion/README.rst
+Morpion/PetchouDev-Morpion-0.1.1-installer.exe4
+Morpion/Morpion/dist
+
+Morpion/GUI/dist
+Morpion/GUI/resources for installer
+Morpion/GUI/build
+
+
+.DS_Store
+.idea
+
