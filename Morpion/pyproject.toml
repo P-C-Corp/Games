@@ -1,11 +1,19 @@
 [tool.poetry]
-name = "Morpion"
+name = "morpion-game"
 version = "0.5.1"
-description = "A nice Morpion game"
-authors = ["PetchouHelper <petchou91d@gmail.com>"]
+description = "A minimal Morpion game to play in the console or with a graphical user interface"
+authors = ["PetchouDev <petchou91d@gmail.com>"]
 packages = [
-    { include = "Morpion" },
+    { include = "morpion-game" },
 ]
+
+
+[tool.poetry.source]
+name = "morpion-game"
+url = "https://github.com/P-C-Corp/Games"
+default = true
+secondary = false
+
 
 [tool.poetry.dependencies]
 python = "^3.9"
