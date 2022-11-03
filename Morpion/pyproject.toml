@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "morpion-game"
-version = "0.5.1"
+version = "0.6.0-1"
 description = "A minimal Morpion game to play in the console or with a graphical user interface"
 authors = ["PetchouDev <petchou91d@gmail.com>"]
 packages = [
