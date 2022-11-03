@@ -8,11 +8,6 @@ packages = [
 ]
 
 
-[tool.poetry.source]
-name = "morpion-game"
-url = "https://github.com/P-C-Corp/Games"
-
-
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -24,6 +19,12 @@ requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+
+[[tool.poetry.source]]
+name = "morpion-game"
+url = "https://github.com/P-C-Corp/Games/Morpion"
+default = false
+secondary = false
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
