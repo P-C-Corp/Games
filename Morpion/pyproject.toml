@@ -11,8 +11,7 @@ packages = [
 [tool.poetry.source]
 name = "morpion-game"
 url = "https://github.com/P-C-Corp/Games"
-default = true
-secondary = false
+
 
 
 [tool.poetry.dependencies]
