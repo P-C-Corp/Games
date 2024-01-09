@@ -41,7 +41,7 @@ def loading(currentVersion, path, SavePath, lang, l):
     percent = 0
 
 
-    for progress in range(0, 1010):
+    for progress in range(0, 1010, 10):
         progress = progress/10
         percent = progress
         bar = f"{lang[l][17]}  [---------------------------------------------------] {percent} %" #11
@@ -54,7 +54,7 @@ def loading(currentVersion, path, SavePath, lang, l):
             print(f"{bar}", end="\r")
         else:
             print(f"{bar}", end='\r')
-        time.sleep(3/1010)
+        time.sleep(3/100)
     percent = 100
     bar = f"{lang[l][17]}  [{fill*50}] 100 %        "
 

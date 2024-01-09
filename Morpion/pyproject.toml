@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "morpion-game"
-version = "0.6.0-1"
+version = "0.6.4"
 description = "A minimal Morpion game to play in the console or with a graphical user interface"
 authors = ["PetchouDev <petchou91d@gmail.com>"]
 packages = [
     { include = "morpion-game" },
 ]
-
+readme = "README.md"
+repository = "https://github.com/P-C-Corp/Games/Morpion"
 
 
 [tool.poetry.dependencies]

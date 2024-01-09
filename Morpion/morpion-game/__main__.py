@@ -22,7 +22,7 @@ def pathToSave()->str:
         path = str(r"c:/Users/{}/PetchouDev".format(usr))
         return path
     else:
-        return f"/Users/{getpass.getuser()}/PetchouDev"
+        return f"/Users/{getpass.getuser()}/PetchouDev/Morpion"
 
 global lang
 lang = {}
@@ -301,14 +301,15 @@ if __name__ == "__main__":
     args = sys.argv
     if "--gui" in args:
         try:
-            with open(f"{pathToSave}/gui.txt", "r") as test:
+            with open(fr"C:\Users\{os.getlogin()}\AppData\Local\Programs\PetchouDev-Morpion\Morpion.exe", "rb") as test:
                 pass
-            os.system(fr"@starts C:\Users\{os.getlogin()}\AppData\Local\Programs\PetchouDev-Morpion")
-            operating_system.exit()
-        except:
+            os.system(fr"@start C:\Users\{os.getlogin()}\AppData\Local\Programs\PetchouDev-Morpion\Morpion.exe")
+            sys.exit()
+        except Exception as e:
+            print(e)
             os.chdir(pathToScript)
             os.system("@start PetchouDev-Morpion-0.1.3-SETUP.exe")
-
+            
 
 
     else:

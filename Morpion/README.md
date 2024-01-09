@@ -1,7 +1,8 @@
 # Morpion
 
 ## installation
-You can install the package by running the following command : ```python3 -m pip install --upgrade morpion-game``` 
+You can install the package by running the following command :
+```python3 -m pip install --upgrade morpion-game``` 
 
 ### Setup
 The first time you play, you will be prompted for your favorite language.
